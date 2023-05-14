@@ -1,6 +1,7 @@
 import csv
 import matplotlib.pyplot as plt
 import tkinter as tk
+from tkinter import ttk
 import datetime as dt
 import tkinter.colorchooser
 
@@ -12,7 +13,6 @@ def main():
     array = readfile(filename)
     #処理の内容
     process = mainMenu(array)
-    
     
 
 def readfile(filename):    
@@ -36,15 +36,64 @@ def writefile(filename, array):
         finally:
             print('書き込み終了')
 
+# ★バグ対応用の関数を追加
+def fixed_map(option):
+    style = ttk.Style()
+    return [elm for elm in style.map('Treeview', query_opt=option) if
+            elm[:2] != ('!disabled', '!selected')]
+
 def mainMenu(array):
     print('書き込み画面')
     mainroot = tk.Tk()
     mainroot.geometry('750x500')
     mainroot.title('メインメニュー')
+
+ 
+    #ツリーの作成
+    tree = ttk.Treeview(mainroot, columns=(0,1,2,3,4), show='headings')
+
+    
+    
+    tree.column(0, width=150, anchor='center')
+    tree.column(1, width=150, anchor='center')
+    tree.column(2, width=150, anchor='center')
+    tree.column(3, width=120, anchor='center')
+    tree.column(4, width=120, anchor='center')
+
+    tree.heading(0, text=array[0][0])
+    tree.heading(1, text=array[0][1])
+    tree.heading(2, text=array[0][2])
+    tree.heading(3, text=array[0][3])
+    tree.heading(4, text=array[0][4])
+
+    tree.place(x=10,y=10,height=240)
+
+    vsb =  ttk.Scrollbar(mainroot,orient='vertical',command=tree.yview)
+
+    vsb.place(x=10+700+3, y=10+3, height=240)
+
+    tree['yscrollcommand'] = vsb.set
+
+    style = ttk.Style()
+    style.map('Treeview', foreground=fixed_map('foreground'), background=fixed_map('background'))
+    
+    #データをレコードに追加：tree.insert()
+    for i in range(1,len(array)):
+        
+        tree.insert('',   #parent:レコード追加時空文字を指定
+                    '0',  #index:文字列の挿入位置を先頭（0）に
+                    values=(array[i][0], array[i][1], array[i][2], array[i][3], array[i][4] ),
+                    tags=array[i][4]
+                    )
+        tree.tag_configure(array[i][4], background=array[i][4])
+    
+
+
     def breakPane():
         exit()
     def createPane():
         mainroot.destroy()
+
     break_btn = tk.Button(mainroot, text='ソフトを終了', command=breakPane)
     break_btn.place(x=380, y=450)
 
@@ -56,8 +105,6 @@ def mainMenu(array):
     inputfile(array)
     
 
-
-
 def inputfile(array):
     root = tk.Tk()
     root.geometry('580x200')
@@ -66,6 +113,8 @@ def inputfile(array):
     def ok():
         root.planTitle = title.get()
         root.planPriority =priority.get()
+        # カラーピッカー
+        root.color = tk.colorchooser.askcolor()
 
         root.startYear = sYear.get()
         root.startMonth = sMonth.get()
@@ -80,7 +129,8 @@ def inputfile(array):
         root.endMin = eMin.get()
 
         root.destroy()
-
+    
+    #各種ラベル群
     titlelabel = tk.Label(text='予定の名前')
     titlelabel.place(x=10, y=40)
 
@@ -168,17 +218,17 @@ def inputfile(array):
     break_btn = tk.Button(root, text='ソフトを閉じる', command=breakPane)
     break_btn.place(x=280, y=150)
 
-    # カラーピッカー
-
+      
     root.mainloop()
 
     # 入力された数値を日時に変換
     try:
         sumStartTime = str(dt.datetime(int(root.startYear),int(root.startMonth),int(root.startDay),int(root.startTime),int(root.startMin)))
         sumEndTime = str(dt.datetime(int(root.endYear),int(root.endMonth),int(root.endDay),int(root.endTime),int(root.endMin)))
-        sumArray = [root.planTitle,sumStartTime,sumEndTime,int(root.planPriority)]
+        sumArray = [root.planTitle,sumStartTime,sumEndTime,int(root.planPriority),root.color[1]]
         array.append(sumArray)
     except:
+        #1つでもエラーがあれば最初から
         main()
 
     #ファイルを書き込み
