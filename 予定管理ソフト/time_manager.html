@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="time_manager.css">
+        <title>予定管理ソフト</title>
+    </head>
+    <body>
+        <h1>予定管理ソフト</h1>
+        <input type="file" id="fileInput">
+        <table id="dataTable"></table>
+        
+        <script src="time_manager.js"></script>
+        <div>
+            <input type="text" id="eventTitle">
+            <input type="datetime-local" id="startTime">
+            <input type="datetime-local" id="endTime">
+            
+            <input type="number"min="0"max="100"step=0.01 id="priority"value="50">
+            <input type="color" id="color">
+        </div>
+        <button onclick="saveCsv()">保存</button>
+
+    </body>
+</html>
